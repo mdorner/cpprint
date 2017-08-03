@@ -36,18 +36,18 @@ namespace mdorner
 				}
 				std::ostream& visitSeparator(std::ostream& os) const override
 				{
-					return os << sentinel_;
+					return os << separator_;
 				}
 				std::ostream& visitTerminator(std::ostream& os) const override
 				{
-					return os << sentinel_;
+					return os << terminator_;
 				}
 			};
 
 			template <typename T, typename ...Args>
 				std::ostream& __print(const style_t& style, std::ostream& os, T&& val, Args&&... args)
 				{
-					return __print(style.visitSeparator(os << std::forward<T>(val)), std::forward<Args>(args)...);
+					return __print(style, style.visitSeparator(os << std::forward<T>(val)), std::forward<Args>(args)...);
 				}
 
 			template <typename T>
@@ -61,6 +61,13 @@ namespace mdorner
 			void print(std::ostream& os, Args&&... args)
 			{
 				const auto style = detail::string_style_t("", " ", "");
+				detail::__print(style, style.visitSentinel(os), std::forward<Args>(args)...);
+			}
+
+		template <typename ...Args>
+			void println(std::ostream& os, Args&&... args)
+			{
+				const auto style = detail::string_style_t("", " ", "\n");
 				detail::__print(style, style.visitSentinel(os), std::forward<Args>(args)...);
 			}
 	}
