@@ -6,7 +6,20 @@
 
 namespace
 {
-	// check potentail name clash issues in case something is changed
+	// cf stream can be bound
+	std::ostringstream static_oss;
+	template<typename ...Args>
+	void print_to_bound_stream(Args&& ...args)
+	{
+		mdorner::print::print(static_oss, std::forward<Args>(args)...);
+	}
+
+	template<typename ...Args>
+	void print_to_cout(Args&& ...args)
+	{
+		mdorner::print::print(std::cout, std::forward<Args>(args)...);
+	}
+
 	template<typename ...Args>
 	void print(Args&&... args)
 	{
