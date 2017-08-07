@@ -4,24 +4,29 @@
 #include <sstream>
 #include <mdorner/print.h>
 
-using mdorner::print::print;
-
 namespace
 {
-	// cf stream can be bound
-	std::ostringstream static_oss;
+	// check potentail name clash issues in case something is changed
 	template<typename ...Args>
-	void print_to_bound_stream(Args&& ...args)
+	void print(Args&&... args)
 	{
-		print(static_oss, std::forward<Args>(args)...);
+		mdorner::print::print(static_oss, std::forward<Args>(args)...);
 	}
 
 	template<typename ...Args>
-	void print_to_cout(Args&& ...args)
+	void println(Args&&... args)
 	{
-		print(std::cout, std::forward<Args>(args)...);
+		mdorner::print::println(std::cout, std::forward<Args>(args)...);
 	}
+}
 
+namespace other_namespace
+{
+	template<typename ...Args>
+	void print(Args&&... args)
+	{
+		mdorner::print::print(static_oss, std::forward<Args>(args)...);
+	}
 }
 
 TEST_CASE("string_style_t works", "[print::detail::string_style_t]")
@@ -39,7 +44,7 @@ TEST_CASE("Print simple strings", "[print]")
 	std::ostream& os = oss;
 	SECTION("Trival string literal works")
 	{
-		print(os, "hello world");
+		mdorner::print::print(os, "hello world");
 		REQUIRE(os.good());
 		REQUIRE(oss.good());
 		REQUIRE(oss.str() == "hello world");
@@ -47,7 +52,7 @@ TEST_CASE("Print simple strings", "[print]")
 	}
 	SECTION("Compsoing string literals works")
 	{
-		print(os, "this", "is", "a", "test");
+		mdorner::print::print(os, "this", "is", "a", "test");
 		REQUIRE(os.good());
 		REQUIRE(oss.good());
 		REQUIRE(oss.str() == "this is a test");
@@ -70,6 +75,19 @@ TEST_CASE("Print simple strings", "[print]")
 		REQUIRE(static_oss.good());
 		REQUIRE(static_oss.str() == "this is a test");
 		static_oss.str("");
+		print("this", "is", "a", "test");
+		REQUIRE(static_oss.good());
+		REQUIRE(static_oss.str() == "this is a test");
+		static_oss.str("");
 		print_to_cout("this", "test", "uses", "std::cout");
+		println("this", "is", "another", "test");
+	}
+
+	SECTION("Other namespace works")
+	{
+		other_namespace::print("this", "is", "a", "test");
+		REQUIRE(static_oss.good());
+		REQUIRE(static_oss.str() == "this is a test");
+		static_oss.str("");
 	}
 }
